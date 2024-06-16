@@ -1,0 +1,1 @@
+print("Código para limpiar datos")
