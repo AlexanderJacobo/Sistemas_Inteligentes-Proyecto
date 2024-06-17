@@ -18,3 +18,5 @@ except UnicodeDecodeError as e:
 
 BDgen_res = BDgen_res.drop(columns=['N_SEC'])
 print(BDgen_res)
+
+print("prueba de conflicto 2")
