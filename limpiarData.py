@@ -13,3 +13,5 @@ BDgen_res = pd.read_csv('./data/B_Generación_Anual_de_residuos_municipal_Distri
 
 print(BDgen_res)
 print('prueba commit jorge')
+
+print("prueba de conflicto")
