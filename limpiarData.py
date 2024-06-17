@@ -10,8 +10,11 @@ from sklearn.compose import ColumnTransformer
 
 #Importar base de datos.
 try:
-    BDgen_res = pd.read_csv('./data/B_Generación_Anual_de_residuos_municipal_Distrital_2014_2021_0.csv', encoding='ISO-8859-1')
-    print(BDgen_res)
+    BDgen_res = pd.read_csv('./data/B_Generación_Anual_de_residuos_municipal_Distrital_2014_2021_0.csv', delimiter=';', encoding='ISO-8859-1')
+    BDgen_res.to_csv('./data/B_Generación_Anual_de_residuos_municipal_Distrital_2014_2021_0_modificado.csv', index=False, sep=',')
     BDgen_res.head()
 except UnicodeDecodeError as e:
     print(f"Error decoding file: {e}")
+
+BDgen_res = BDgen_res.drop(columns=['N_SEC'])
+print(BDgen_res)
