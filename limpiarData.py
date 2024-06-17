@@ -23,4 +23,14 @@ BDgen_res = BDgen_res.drop(columns=['PROVINCIA'])
 BDgen_res = BDgen_res.drop(columns=['DISTRITO'])
 BDgen_res = BDgen_res.drop(columns=['UBIGEO'])
 BDgen_res = BDgen_res.drop(columns=['REG_NAT'])
-print(BDgen_res)
+
+BDgen_Depart_group = BDgen_res.groupby(['DEPARTAMENTO', 'PERIODO']).agg({
+    'POB_TOTAL': 'sum',
+    'POB_URBANA': 'sum',
+    'POB_RURAL': 'sum',
+    'QRESIDUOS_MUN': 'sum'
+}).reset_index()
+
+BDgen_Depart_group.to_csv('./data/B_Generación_Anual_de_residuos_municipal_Distrital_2014_2021_agrupado.csv', index=False, sep=',')
+
+print(BDgen_Depart_group)
