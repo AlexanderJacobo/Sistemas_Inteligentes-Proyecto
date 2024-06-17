@@ -17,4 +17,5 @@ except UnicodeDecodeError as e:
     print(f"Error decoding file: {e}")
 
 BDgen_res = BDgen_res.drop(columns=['N_SEC'])
+BDgen_res = BDgen_res.drop(columns=['FECHA_CORTE'])
 print(BDgen_res)
