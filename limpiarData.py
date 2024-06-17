@@ -14,3 +14,4 @@ BDgen_res = pd.read_csv('./data/B_Generación_Anual_de_residuos_municipal_Distri
 print(BDgen_res)
 BDgen_res.head()
 
+print("prueba de conflicto")
