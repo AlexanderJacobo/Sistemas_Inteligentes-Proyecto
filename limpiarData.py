@@ -16,6 +16,11 @@ try:
 except UnicodeDecodeError as e:
     print(f"Error decoding file: {e}")
 
+#Eliminación de filas innecesarias para el estudio.
 BDgen_res = BDgen_res.drop(columns=['N_SEC'])
 BDgen_res = BDgen_res.drop(columns=['FECHA_CORTE'])
+BDgen_res = BDgen_res.drop(columns=['PROVINCIA'])
+BDgen_res = BDgen_res.drop(columns=['DISTRITO'])
+BDgen_res = BDgen_res.drop(columns=['UBIGEO'])
+BDgen_res = BDgen_res.drop(columns=['REG_NAT'])
 print(BDgen_res)
