@@ -52,4 +52,4 @@ BDgen_Depart_group_min_max.to_csv('./data/B_Generación_Anual_de_residuos_munici
 
 print(BDgen_Depart_group_min_max)
 
-print("Pre procesado data 50%")
+print("Pre procesado data 70%")
