@@ -51,3 +51,5 @@ BDgen_Depart_group_min_max = (BDgen_Depart_group[(BDgen_Depart_group['PERIODO'] 
 BDgen_Depart_group_min_max.to_csv('./data/B_Generación_Anual_de_residuos_municipal_Distrital_2014_2021_agrupado.csv', index=False, sep=',')
 
 print(BDgen_Depart_group_min_max)
+
+print("Pre procesado data 50%")
