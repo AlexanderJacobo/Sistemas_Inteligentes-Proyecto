@@ -20,7 +20,7 @@ except UnicodeDecodeError as e:
     print(f"Error al importar base de datos: {e}")
 
 # Eliminación de filas innecesarias para el estudio
-BDgen_res = BDgen_res.drop(columns=['N_SEC', 'FECHA_CORTE', 'PROVINCIA', 'DISTRITO', 'UBIGEO', 'REG_NAT'])
+BDgen_res = BDgen_res.drop(columns=['N_SEC', 'FECHA_CORTE', 'PROVINCIA', 'DISTRITO', 'UBIGEO', 'POB_URBANA','REG_NAT','POB_RURAL'])
 
 # Convertir 'QRESIDUOS_MUN' a float, ya que en la BD, se encuentra entre comillas.
 BDgen_res['QRESIDUOS_MUN'] = BDgen_res['QRESIDUOS_MUN'].str.replace(',', '.').astype(float)
@@ -28,8 +28,6 @@ BDgen_res['QRESIDUOS_MUN'] = BDgen_res['QRESIDUOS_MUN'].str.replace(',', '.').as
 # Agrupar y sumar valores
 BDgen_Depart_group = BDgen_res.groupby(['DEPARTAMENTO', 'PERIODO']).agg({ #Al agruparlo Por estos campos, los índices serán las columnas por las cuáles se agruparon.
     'POB_TOTAL': 'sum',
-    'POB_URBANA': 'sum',
-    'POB_RURAL': 'sum',
     'QRESIDUOS_MUN': 'sum'
 }).reset_index() #Este metodo sirve para comenzar los índices de 0 y en orden creciente (numéricamente) y manejarlo de una forma más fácil.
 
@@ -41,8 +39,62 @@ min_period = min_max_periods['min'].min()
 max_period = min_max_periods['max'].max()
 
 # Filtrar las filas con los períodos mínimo y máximo
-BDgen_Depart_group_min_max = (BDgen_Depart_group[(BDgen_Depart_group['PERIODO'] == min_period) | (BDgen_Depart_group['PERIODO'] == max_period)]).reset_index().drop(columns=['index'])
+BDgen_Depart_Filtered = (BDgen_Depart_group[(BDgen_Depart_group['PERIODO'] == min_period) | (BDgen_Depart_group['PERIODO'] == max_period)]).reset_index().drop(columns=['index'])
 
-BDgen_Depart_group_min_max.to_csv('./data/Generación_Anual_de_Residuos_Municipal_Distrital_2014_2021_Peprocesado.csv', index=False, sep=',')
+BDgen_Depart_Filtered.to_csv('./data/Generación_Anual_de_Residuos_Municipal_Distrital_2014_2021.csv', index=False, sep=',')
 
-print(BDgen_Depart_group_min_max)
+print(BDgen_Depart_Filtered)
+
+# Crear nuevos campos basados en intervalos de millones para POB_TOTAL
+min_pob = BDgen_Depart_Filtered['POB_TOTAL'].min() // 1000000 * 1000000
+max_pob = (BDgen_Depart_Filtered['POB_TOTAL'].max() // 1000000 + 1) * 1000000
+pob_intervals = range(int(min_pob), int(max_pob), 1000000)
+
+# Crear nuevos campos basados en intervalos de 50,000 para QRESIDUOS_MUN
+min_res = BDgen_Depart_Filtered['QRESIDUOS_MUN'].min() // 50000 * 50000
+max_res = (BDgen_Depart_Filtered['QRESIDUOS_MUN'].max() // 50000 + 1) * 50000
+res_intervals = range(int(min_res), int(max_res), 50000)
+
+# Obtener valores únicos de DEPARTAMENTO y PERIODO
+departamentos = BDgen_Depart_Filtered['DEPARTAMENTO'].unique()
+periodos = BDgen_Depart_Filtered['PERIODO'].unique()
+
+# Crear la nueva tabla
+columns = list(departamentos) + list(periodos) + \
+          [f'Pob_{i//1000000}M_{(i+1000000)//1000000}M' for i in pob_intervals] + \
+          [f'Residuos_{i//1000}k_{(i+50000)//1000}k' for i in res_intervals]
+
+BDgen_preprocesada = pd.DataFrame(columns=columns)
+
+# Llenar la nueva tabla con los registros de la tabla anterior
+for _, row in BDgen_Depart_Filtered.iterrows():
+    new_row = {col: 'FALSE' for col in columns}
+    
+    # Actualizar columnas de DEPARTAMENTO
+    if row['DEPARTAMENTO'] in new_row:
+        new_row[row['DEPARTAMENTO']] = 'TRUE'
+    
+    # Actualizar columnas de PERIODO
+    for periodo in periodos:
+        new_row[periodo] = 1 if row['PERIODO'] == periodo else 0
+    
+    # Actualizar columnas de POB_TOTAL
+    for i in pob_intervals:
+        col_name = f'Pob_{i//1000000}M_{(i+1000000)//1000000}M'
+        new_row[col_name] = 'TRUE' if i <= row['POB_TOTAL'] < i + 1000000 else 'FALSE'
+    
+    # Actualizar columnas de QRESIDUOS_MUN
+    for i in res_intervals:
+        col_name = f'Residuos_{i//1000}k_{(i+50000)//1000}k'
+        new_row[col_name] = 1 if i <= row['QRESIDUOS_MUN'] < i + 50000 else 0
+    
+    BDgen_preprocesada = BDgen_preprocesada._append(new_row, ignore_index=True)
+
+# Eliminar columnas con todos los valores FALSE/0
+columns_to_keep = BDgen_preprocesada.columns[(BDgen_preprocesada != 'FALSE').any(axis=0)]
+columns_to_keep = columns_to_keep[(BDgen_preprocesada[columns_to_keep] != 0).any(axis=0)]
+BDgen_preprocesada = BDgen_preprocesada[columns_to_keep]
+
+BDgen_preprocesada.to_csv('./data/Generación_Anual_de_Residuos_Municipal_Distrital_Procesado.csv', index=False, sep=',')
+
+print(f"Número de columnas de la nueva tabla: {len(BDgen_preprocesada.columns)}")
