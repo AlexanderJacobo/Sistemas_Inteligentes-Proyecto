@@ -20,7 +20,7 @@ kmeans = KMeans(n_clusters=3, random_state=0).fit(features_scaled)
 # Añadir los labels al DataFrame
 data['Cluster'] = kmeans.labels_
 
-# Visualizar los clusters en 2D
+# Visualizar los clusters
 plt.figure(figsize=(14, 7))
 
 plt.subplot(1, 2, 1)
