@@ -12,11 +12,13 @@ data = pd.read_csv('./data/Diferencia_QRESIDUOS_MUN_2014_2021.csv')
 # Crear etiquetas basadas en QRESIDUOS_MUN_DIF
 def categorize_diff(value):
     if value < 0:
-        return 0
-    elif value < 10000:
-        return 1
+        return 0  
+    elif value == 564899.52:  
+        return 3  # Lima
+    elif value > 30000:
+        return 2  
     else:
-        return 2
+        return 1  
 
 # Aplicar la función categorize_diff para crear la nueva columna 'Class'
 data['Class'] = data['QRESIDUOS_MUN_DIF'].apply(categorize_diff)
@@ -42,9 +44,8 @@ y_pred = knn.predict(X_test)
 # Evaluar el rendimiento del modelo
 print("Accuracy:", knn.score(X_test, y_test))
 
-# Visualización de la clasificación con tres colores
-cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
-cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
+# Visualización de la clasificación
+cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF', '#A90EF1'])
 
 x_min, x_max = X_scaled[:, 0].min() - .1, X_scaled[:, 0].max() + .1
 y_min, y_max = X_scaled[:, 1].min() - .1, X_scaled[:, 1].max() + .1
@@ -53,10 +54,9 @@ Z = knn.predict(np.c_[xx.ravel(), yy.ravel()])
 
 Z = Z.reshape(xx.shape)
 plt.figure()
-plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
 
-plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=y, cmap=cmap_bold)
+plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=y, cmap=cmap_bold, edgecolor='k', s=20)
 plt.xlabel('QRESIDUOS_MUN_2014')
 plt.ylabel('QRESIDUOS_MUN_2021')
-plt.title('Clasificación KNN (3 colores)')
+plt.title('Clasificación KNN')
 plt.show()
